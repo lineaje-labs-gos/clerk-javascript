@@ -1,113 +1,125 @@
 {
-  "name": "@clerk/javascript",
+  "name": "@clerk/nextjs",
   "version": "4.29.3-lineaje-01",
-  "private": true,
-  "license": "MIT",
-  "contributors": [
-    {
-      "name": "Lineaje DepFixer",
-      "email": "221268890+Lineaje-DepFixer@users.noreply.github.com"
-    }
+  "description": "Clerk SDK for NextJS",
+  "keywords": [
+    "clerk",
+    "typescript",
+    "nextjs",
+    "auth",
+    "authentication",
+    "passwordless",
+    "session",
+    "jwt"
   ],
-  "workspaces": {
-    "packages": [
-      "packages/*"
-    ]
-  },
-  "scripts": {
-    "build": "FORCE_COLOR=1 turbo build --concurrency=${TURBO_CONCURRENCY:-80%}",
-    "bundlewatch": "turbo bundlewatch",
-    "changeset": "changeset",
-    "changeset:empty": "npm run changeset -- --empty",
-    "clean": "turbo clean",
-    "dev": "FORCE_COLOR=1 turbo dev --filter=@clerk/* --filter=!@clerk/expo",
-    "dev:js": "FORCE_COLOR=1 turbo dev:current --filter=@clerk/clerk-js",
-    "format": "prettier --write .",
-    "format:check": "prettier --cache --check .",
-    "lint": "FORCE_COLOR=1 turbo lint",
-    "lint:attw": "FORCE_COLOR=1 turbo lint:attw",
-    "lint:fix": "FORCE_COLOR=1 turbo lint -- --fix",
-    "lint:publint": "FORCE_COLOR=1 turbo lint:publint",
-    "nuke": "./scripts/nuke.sh",
-    "prepare": "husky install",
-    "release": "changeset publish && git push --follow-tags",
-    "release:canary": "changeset publish --tag canary --no-git-tag",
-    "release:snapshot": "changeset publish --tag snapshot --no-git-tag",
-    "release:verdaccio": "if [ \"$(npm config get registry)\" = \"https://registry.npmjs.org/\" ]; then echo 'Error: Using default registry' && exit 1; else TURBO_CONCURRENCY=1 npm run build && changeset publish --no-git-tag; fi",
-    "test": "FORCE_COLOR=1 turbo test --concurrency=${TURBO_CONCURRENCY:-80%}",
-    "test:cache:clear": "FORCE_COLOR=1 turbo test:cache:clear --continue --concurrency=${TURBO_CONCURRENCY:-80%}",
-    "test:integration:base": "DEBUG=1 npx playwright test --config integration/playwright.config.ts",
-    "test:integration:deployment:nextjs": "DEBUG=1 npx playwright test --config integration/playwright.deployments.config.ts",
-    "test:integration:generic": "E2E_APP_ID=react.vite.* npm run test:integration:base -- --grep @generic",
-    "test:integration:nextjs": "E2E_APP_ID=next.appRouter.withEmailCodes npm run test:integration:base -- --grep \"@generic|@nextjs\"",
-    "test:integration:remix": "echo 'placeholder'",
-    "turbo:clean": "turbo daemon clean",
-    "update:lockfile": "npm run nuke && npm install -D --arch=x64 --platform=linux turbo && npm install -D --arch=arm64 --platform=darwin turbo",
-    "version": "changeset version && ./scripts/version-info.sh",
-    "version:canary": "./scripts/canary.mjs",
-    "version:snapshot": "./scripts/snapshot.mjs",
-    "yalc:all": "for d in packages/*/; do echo $d; cd $d; yalc push --replace --sig; cd '../../'; done"
-  },
-  "devDependencies": {
-    "@actions/core": "^1.10.1",
-    "@arethetypeswrong/cli": "^0.12.1",
-    "@changesets/cli": "^2.26.2",
-    "@changesets/get-github-info": "^0.5.2",
-    "@commitlint/cli": "^17.7.2",
-    "@commitlint/config-conventional": "^17.7.0",
-    "@emotion/jest": "^11.11.0",
-    "@faker-js/faker": "^8.1.0",
-    "@octokit/rest": "^20.0.2",
-    "@playwright/test": "^1.39.0",
-    "@testing-library/dom": "^8.19.0",
-    "@testing-library/jest-dom": "^5.16.5",
-    "@testing-library/react": "^13.4.0",
-    "@testing-library/user-event": "^14.4.3",
-    "@types/cross-spawn": "^6.0.3",
-    "@types/jest": "^29.3.1",
-    "@types/react": "^18.2.28",
-    "@types/react-dom": "^18.2.13",
-    "citty": "^0.1.4",
-    "conventional-changelog-conventionalcommits": "^4.6.3",
-    "cpy-cli": "^5.0.0",
-    "cross-spawn": "^7.0.3",
-    "dotenv": "^16.3.1",
-    "eslint": "^8.49.0",
-    "eslint-config-custom": "*",
-    "execa": "^5.1.1",
-    "expect-type": "^0.16.0",
-    "fastify": "4.12.0",
-    "fastify-plugin": "^4.5.0",
-    "fs-extra": "^11.1.1",
-    "get-port": "^5.1.1",
-    "globby": "^13.2.2",
-    "http-server": "^14.1.1",
-    "husky": "^8.0.3",
-    "jest": "^29.7.0",
-    "jest-environment-jsdom": "^29.3.1",
-    "lint-staged": "^14.0.1",
-    "npm-cli-adduser": "^1.1.4",
-    "npm-cli-login": "^1.0.0",
-    "prettier": "^2.8.7",
-    "publint": "^0.2.4",
-    "react": "18.2.0",
-    "react-dom": "18.2.0",
-    "rimraf": "^5.0.5",
-    "tree-kill": "^1.2.2",
-    "ts-jest": "^29.0.3",
-    "tsup": "^7.2.0",
-    "turbo": "^1.10.16",
-    "typescript": "^5.2.2",
-    "verdaccio": "^5.26.3",
-    "zx": "^7.2.3"
-  },
-  "packageManager": "npm@8.5.0",
-  "engines": {
-    "node": ">=16.8.0",
-    "npm": ">=8.5.0"
+  "homepage": "https://clerk.com/",
+  "bugs": {
+    "url": "https://github.com/clerk/javascript/issues"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/lineaje-labs-gos/clerk-javascript"
+    "url": "git+https://github.com/clerk/javascript.git",
+    "directory": "packages/nextjs"
+  },
+  "license": "MIT",
+  "author": "Clerk",
+  "sideEffects": false,
+  "exports": {
+    ".": {
+      "types": "./dist/types/index.d.ts",
+      "import": "./dist/esm/index.js",
+      "require": "./dist/cjs/index.js"
+    },
+    "./server": {
+      "types": "./dist/types/server/index.d.ts",
+      "import": "./dist/esm/server/index.js",
+      "require": "./dist/cjs/server/index.js"
+    },
+    "./api": {
+      "types": "./dist/types/api/index.d.ts",
+      "import": "./dist/esm/api/index.js",
+      "require": "./dist/cjs/api/index.js"
+    },
+    "./ssr": {
+      "types": "./dist/types/ssr/index.d.ts",
+      "import": "./dist/esm/ssr/index.js",
+      "require": "./dist/cjs/ssr/index.js"
+    },
+    "./edge-middlewarefiles": {
+      "types": "./dist/types/edge-middleware/index.d.ts",
+      "import": "./dist/esm/edge-middleware/index.js",
+      "require": "./dist/cjs/edge-middleware/index.js"
+    },
+    "./app-beta": {
+      "types": "./dist/types/app-beta/index.d.ts",
+      "import": "./dist/esm/app-beta/index.js",
+      "require": "./dist/cjs/app-beta/index.js"
+    },
+    "./app-beta/client": {
+      "types": "./dist/types/app-beta/client/index.d.ts",
+      "import": "./dist/esm/app-beta/client/index.js",
+      "require": "./dist/cjs/app-beta/client/index.js"
+    }
+  },
+  "main": "./dist/cjs/index.js",
+  "module": "./dist/esm/index.js",
+  "types": "./dist/types/index.d.ts",
+  "files": [
+    "dist",
+    "server",
+    "api",
+    "edge-middleware",
+    "ssr",
+    "app-beta"
+  ],
+  "scripts": {
+    "build": "npm run clean && tsup",
+    "build:declarations": "tsc -p tsconfig.declarations.json",
+    "clean": "rimraf ./dist",
+    "dev": "tsup --watch",
+    "dev:publish": "npm run dev -- --env.publish",
+    "lint": "eslint src/",
+    "lint:attw": "attw --pack .",
+    "lint:publint": "publint",
+    "publish:local": "npx yalc push --replace --sig",
+    "test": "jest",
+    "test:cache:clear": "jest --clearCache --useStderr",
+    "test:ci": "jest --maxWorkers=70%"
+  },
+  "dependencies": {
+    "@clerk/backend": "0.37.2",
+    "@clerk/clerk-react": "4.30.3",
+    "@clerk/clerk-sdk-node": "4.13.6",
+    "@clerk/shared": "1.3.1",
+    "@clerk/types": "3.60.0",
+    "path-to-regexp": ">=6.3.0",
+    "tslib": "2.4.1"
+  },
+  "devDependencies": {
+    "@types/node": "^16.11.55",
+    "@types/react": "*",
+    "@types/react-dom": "*",
+    "next": "^13.4.19",
+    "node-fetch-native": "1.1.1",
+    "typescript": "*"
+  },
+  "peerDependencies": {
+    "next": ">=10",
+    "react": "^17.0.2 || ^18.0.0-0",
+    "react-dom": "^17.0.2 || ^18.0.0-0"
+  },
+  "engines": {
+    "node": ">=14"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "overrides": {
+    "path-to-regexp": ">=6.3.0",
+    "form-data": ">=3.0.5"
+  },
+  "resolutions": {
+    "path-to-regexp": ">=6.3.0",
+    "form-data": ">=3.0.5"
   }
 }
