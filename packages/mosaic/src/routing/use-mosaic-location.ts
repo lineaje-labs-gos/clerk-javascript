@@ -27,7 +27,7 @@ const ADAPTER_READS: Record<keyof HostUrl, keyof AdapterReads> = {
 const LEADING: Record<keyof HostUrl, string> = { pathname: '', search: '?', hash: '#' };
 
 // The provider fixes which hooks the adapter has, so the hook this calls is fixed too.
-function useAdapterRead(useRead: AdapterRead, leading: string): string | undefined {
+export function useAdapterRead(useRead: AdapterRead, leading: string): string | undefined {
   const value = useRead() ?? undefined;
   const text = typeof value === 'object' ? value.toString() : value;
   return text?.startsWith(leading) ? text.slice(leading.length) : text;

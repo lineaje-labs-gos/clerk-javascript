@@ -8,6 +8,7 @@ import { useMessages } from '../localization';
 import { useActor } from '../machine/use-machine';
 import type { PortalContainer } from '../primitives/portal';
 import { PortalProvider } from '../primitives/portal';
+import { useConsumeLink } from '../routing/consume-link';
 import { useRoutingConfig } from '../routing/router-adapter';
 import { useFixedRoutingMode, useHostPathname, useMosaicLocation } from '../routing/use-mosaic-location';
 import type { ModalHandle, ModalRoutingMode, ModalSurface, ModalSurfaces } from './modal.types';
@@ -72,7 +73,8 @@ export function ModalSurfaceHost<Options>({
   const routing = useFixedRoutingMode(useRoutingConfig().modals ?? 'virtual');
   const base = surface.path ?? `/modal/${surface.id}`;
   const location = useMosaicLocation({ routing, path: base });
-  const isOpen = location.useSegmentParts() !== undefined;
+  const entry = useConsumeLink(location, location.useSegmentParts(), { routing, path: base });
+  const isOpen = entry !== undefined;
   const page = useHostPathname();
   const leftPage =
     routing === 'virtual' && isOpen && state.openedOn !== undefined && page !== undefined && state.openedOn !== page;
