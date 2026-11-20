@@ -157,7 +157,10 @@ export function useSignUpController(
     onNext: next,
     isPending: isFinishing,
     globalErrorMessage: finishError,
-    onEditIdentifier: () => go(detailsRouteFor(route)),
+    onEditIdentifier: () => {
+      details.leaveChannel();
+      go(detailsRouteFor(route));
+    },
   };
 
   if (isHidden) {
