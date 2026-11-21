@@ -112,6 +112,7 @@ export function useSignUpController(
   const actions = usePendingAction<'startOver' | 'ticket' | 'return'>();
   const redeemedTicket = useRef<string | undefined>(undefined);
   const completedReturn = useRef(false);
+  const [isReturning, setIsReturning] = useState(liveModel.flow.isReturning);
   const errorText = useErrorText();
   const liveStep = liveModel.flow.step;
   const isNextScreenLoading = liveStep.type === 'leaving' || (liveStep.type === 'task' && !isTaskReady);
@@ -135,7 +136,7 @@ export function useSignUpController(
   const isFlowOver = finishSnapshot.value === 'finished' || shown === 'taskChooseOrganization';
   const isHidden = liveStep.type === 'signed_in' && (leavesOnArrival || isFlowOver);
   const screen =
-    actions.pendingKey === 'ticket' || actions.pendingKey === 'return'
+    isReturning || actions.pendingKey === 'ticket' || actions.pendingKey === 'return'
       ? 'loading'
       : (finishSnapshot.context.frozenScreen ?? screenFor(shown, flow, blocked !== undefined));
 
@@ -168,18 +169,21 @@ export function useSignUpController(
   });
   /* eslint-disable react-you-might-not-need-an-effect/no-event-handler -- Completes an OAuth return, or redeems an invitation, once when sign-up opens on start with its marker or ticket in the URL; arriving from a redirect or a link is not an event a handler could run from. */
   useEffect(() => {
-    if (flow.isReturning && route === 'start' && !completedReturn.current) {
+    if (isReturning && route === 'start' && !completedReturn.current) {
       completedReturn.current = true;
-      void actions.run('return', async () => {
-        const step = await flow.completeReturn();
-        if (step) {
-          next(step);
-        }
-      });
+      void actions
+        .run('return', async () => {
+          const step = await flow.completeReturn();
+          if (step) {
+            next(step);
+          }
+        })
+        .then(() => setIsReturning(false));
       return;
     }
     if (
-      flow.isReturning ||
+      isReturning ||
+      actions.isPending ||
       !flow.ticket ||
       model.details.inTicketSignUp ||
       route !== 'start' ||
