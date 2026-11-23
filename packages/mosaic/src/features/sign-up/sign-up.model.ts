@@ -496,6 +496,7 @@ export function useSignUpModel({
         }
         const failure = signUp.verifications.externalAccount.error;
         if (failure) {
+          forgetTicket();
           await run(() => signUp.reset());
           throw new SaveError({
             global: SHOWN_RETURN_ERRORS.includes(failure.code)
