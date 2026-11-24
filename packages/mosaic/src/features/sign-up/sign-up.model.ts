@@ -71,7 +71,6 @@ export interface SignUpFlowModel {
   afterSignUpUrl: string;
   leave?: () => void;
   ticket: string | undefined;
-  inTicketSignUp: boolean;
   redeemTicket: () => Promise<{ step: SignUpNextStep; emailAddress: string }>;
   finalize: () => Promise<void>;
   reset: () => Promise<void>;
@@ -103,7 +102,7 @@ export interface SignUpDetailsModel {
   continueLegalConsent?: SignUpLegalConsent;
   validatePassword: (password: string) => Promise<FieldFeedback | undefined>;
   alternativeChannels: Array<AuthProvider & { id: PhoneCodeChannel }>;
-  startUpdatesSignUp: boolean;
+  inTicketSignUp: boolean;
   create: (values: SignUpDetailsValues, options?: { channel?: PhoneCodeChannel }) => Promise<SignUpCreateResult>;
   update: (values: SignUpDetailsValues) => Promise<SignUpNextStep>;
 }
@@ -361,7 +360,6 @@ export function useSignUpModel({
           }
         : undefined,
       ticket,
-      inTicketSignUp,
       redeemTicket: async () => {
         const { error } = await signUp.ticket({ ticket: ticket ?? '', unsafeMetadata });
         if (error) {
@@ -439,7 +437,7 @@ export function useSignUpModel({
       legalConsent,
       continueLegalConsent: signUp.missingFields.includes('legal_accepted') ? legalConsent : undefined,
       validatePassword,
-      startUpdatesSignUp: inTicketSignUp,
+      inTicketSignUp,
       alternativeChannels: phoneCodeChannels.flatMap(channel => {
         const provider = getAlternativePhoneCodeProviderData(channel);
         return provider ? [{ id: channel, name: provider.name, iconUrl: iconImageUrl(channel) }] : [];
