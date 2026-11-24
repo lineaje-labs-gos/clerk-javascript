@@ -23,6 +23,7 @@ export type SyncableClerk = {
   setActive: (params: { session: SignedInSessionResource | null }) => Promise<void>;
   updateClient: (client: ClientResource, options?: { __internal_dangerouslySkipEmit?: boolean }) => void;
   handleUnauthenticated: (options?: { broadcast?: boolean }) => Promise<unknown>;
+  signOut?: (...args: unknown[]) => Promise<void>;
   __internal_reloadInitialResources?: () => Promise<void>;
   __internal_setActiveInProgress?: boolean;
 };
@@ -236,17 +237,26 @@ export function createNativeClientSync(
       }
       await tokenCache.saveClientToken(token, await native.getDeviceToken().catch(() => null));
     },
-    clearToken: key => fallback().clearToken?.(key),
+    clearToken: async key => {
+      if (key === CLERK_CLIENT_JWT_KEY && (await ready())) {
+        const current = await native.getDeviceToken().catch(() => null);
+        if (current) {
+          await setDeviceToken(null, current);
+        }
+        mirroredToken = null;
+      }
+      await fallback().clearToken?.(key);
+    },
     saveClientToken: async (token, requestToken) => {
       if (!(await ready())) {
         return fallback().saveToken(CLERK_CLIENT_JWT_KEY, token);
       }
-      if (token === requestToken || (await setDeviceToken(token, requestToken))) {
+      if (token !== requestToken && (await setDeviceToken(token, requestToken))) {
         mirror(token);
         return;
       }
       const current = await native.getDeviceToken().catch(() => null);
-      const didReclaim = await reclaimRotatedToken(token, requestToken, current);
+      const didReclaim = token !== requestToken && (await reclaimRotatedToken(token, requestToken, current));
       mirror(didReclaim ? token : current);
       if (didReclaim) {
         void native.refreshClient().catch(error => warn('Failed to refresh the native client.', error));
@@ -386,8 +396,36 @@ export function createNativeClientSync(
       return originalHandleUnauthenticated(options);
     };
 
+    const originalSignOut = clerk.signOut;
+    const signOut: SyncableClerk['signOut'] =
+      originalSignOut &&
+      (async (...args) => {
+        const options = args.find(arg => !!arg && typeof arg === 'object') as { sessionId?: string } | undefined;
+        const signsOutEverySession = !options?.sessionId || (clerk.client?.signedInSessions.length ?? 0) <= 1;
+        let failure: { error: unknown } | null = null;
+        try {
+          await originalSignOut(...args);
+        } catch (error) {
+          failure = { error };
+        }
+        if (signsOutEverySession && !clerk.session && clerk.client?.signedInSessions.length) {
+          await tokenCache.clearToken?.(CLERK_CLIENT_JWT_KEY);
+          if (failure) {
+            await clerk
+              .setActive({ session: null })
+              .catch(error => warn('Failed to finish signing out after the sign-out request failed.', error));
+          }
+        }
+        if (failure) {
+          throw failure.error;
+        }
+      });
+
     clerk.updateClient = updateClient;
     clerk.handleUnauthenticated = handleUnauthenticated;
+    if (signOut) {
+      clerk.signOut = signOut;
+    }
     const removeClerkListener = clerk.addListener(
       () => void toNative.run().catch(error => warn('Failed to refresh the native client.', error)),
     );
@@ -419,6 +457,9 @@ export function createNativeClientSync(
       }
       if (clerk.handleUnauthenticated === handleUnauthenticated) {
         clerk.handleUnauthenticated = originalHandleUnauthenticated;
+      }
+      if (signOut && clerk.signOut === signOut) {
+        clerk.signOut = originalSignOut;
       }
       if (activeEngine === engine) {
         activeEngine = null;
