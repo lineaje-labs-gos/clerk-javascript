@@ -83,7 +83,8 @@ export class FakeClerk {
   loaded = false;
   status = 'loading';
   client: FakeClientResource | undefined = undefined;
-  session: FakeSessionResource | null = null;
+  session: FakeSessionResource | null | undefined = null;
+  rethrowOfflineNetworkErrors = false;
   __internal_setActiveInProgress = false;
   readonly emissions: JsEmission[] = [];
   #beforeRequestHooks: BeforeRequestHook[] = [];
@@ -228,16 +229,36 @@ export class FakeClerk {
 
   async signIn(userId: string): Promise<string> {
     const response = await this.fapi(token => this.server.signIn('js', token, userId));
+    if (response.status === 400) {
+      throw Object.assign(new Error('Session already exists'), { code: 'session_exists' });
+    }
     this.#applyPiggybackedClient(response);
     await this.setActive({ session: response.sessionId });
     return response.sessionId;
   }
 
-  async signOut(): Promise<void> {
-    const response = await this.fapi(token => this.server.removeAllSessions('js', token));
+  signOut = async (options?: { sessionId?: string }): Promise<void> => {
+    const sessionId = options?.sessionId;
+    this.session = undefined;
+    this.#emit();
+    let response: FapiResponse;
+    try {
+      response = await this.fapi(token =>
+        sessionId && (this.client?.signedInSessions.length ?? 0) > 1
+          ? this.server.removeSession('js', token, sessionId)
+          : this.server.removeAllSessions('js', token),
+      );
+    } catch (error) {
+      if (!this.rethrowOfflineNetworkErrors || !(error instanceof TypeError)) {
+        throw error;
+      }
+      this.session = null;
+      this.#emit();
+      return;
+    }
     this.#applyPiggybackedClient(response);
     await this.setActive({ session: null });
-  }
+  };
 
   async updateProfile(): Promise<void> {
     const sessionId = this.session?.id;
