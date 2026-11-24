@@ -129,7 +129,6 @@ export function useSignUpController(
 
   const model = finishSnapshot.context.frozenModel ?? liveModel;
   const { flow, navigation, verification } = model;
-  // The marker is in the URL from the first paint, before the effect starts the return. `lastKey` is set once it ran.
   const isReturning = actions.pendingKey === 'return' || (flow.isReturning && actions.lastKey === undefined);
   const isFinishing = finishSnapshot.value === 'finishing' || finishSnapshot.value === 'handingOff';
   const shown = shownRoute(route, flow.step.type === 'signed_in' && !arrivedSignedIn ? { type: 'leaving' } : flow.step);
@@ -186,7 +185,6 @@ export function useSignUpController(
       return;
     }
     if (
-      isReturning ||
       actions.isPending ||
       !flow.ticket ||
       model.details.inTicketSignUp ||
