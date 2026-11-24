@@ -141,6 +141,7 @@ export function useSignUpDetailsController(
 
   const switchChannel = (next: PhoneCodeChannel | undefined) => {
     setChosenChannel(next);
+    // Both phone screens share one form, so a channel switch starts it fresh with the same values.
     form.reset(form.values);
   };
 
