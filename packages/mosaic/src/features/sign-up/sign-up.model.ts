@@ -82,7 +82,7 @@ export interface SignUpFlowModel {
   ticket: string | undefined;
   redeemTicket: () => Promise<{ result: SignUpCreateResult; emailAddress: string }>;
   isReturning: boolean;
-  completeReturn: () => Promise<SignUpNextStep | undefined>;
+  completeReturn: () => Promise<SignUpCreateResult | undefined>;
   finalize: () => Promise<void>;
   reset: () => Promise<void>;
 }
@@ -251,7 +251,7 @@ function emailSupportFor(mode: SignUpFlowModel['mode'], address: string | undefi
   return () => window.location.assign(`mailto:${address}`);
 }
 
-function blockedBy(error: ClerkError | null): AuthActionBlockedDetails | undefined {
+function blockedBy(error: ClerkError | ClerkAPIError | null): AuthActionBlockedDetails | undefined {
   const blocked = actionBlockedDetailsFrom(error && isClerkAPIResponseError(error) ? error.errors[0] : error);
   if (!blocked) {
     return undefined;
@@ -516,6 +516,10 @@ export function useSignUpModel({
         if (failure) {
           forgetTicket();
           await run(() => signUp.reset());
+          const blocked = blockedBy(failure);
+          if (blocked) {
+            return { type: 'blocked', details: blocked };
+          }
           throw new SaveError({
             global: SHOWN_RETURN_ERRORS.includes(failure.code)
               ? { code: failure.code, message: failure.longMessage || failure.message }
