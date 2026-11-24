@@ -19,18 +19,23 @@ import { useSignUpDetailsController } from './sign-up-details/sign-up-details.co
 
 interface FinishContext {
   frozenModel: SignUpReadyModel | null;
+  frozenScreen: 'loading' | undefined;
   isNextScreenLoading: boolean;
   error: ErrorDescription | undefined;
 }
 
-type FinishEvent = { type: 'FINISH'; frozenModel: SignUpReadyModel };
+type FinishEvent = { type: 'FINISH'; frozenModel: SignUpReadyModel; frozenScreen?: 'loading' };
 
 const finish = setup<FinishContext, FinishEvent>();
 
 const startFinishing = {
   FINISH: {
     target: 'finishing' as const,
-    actions: finish.assign<FinishEvent>((_, event) => ({ frozenModel: event.frozenModel, error: undefined })),
+    actions: finish.assign<FinishEvent>((_, event) => ({
+      frozenModel: event.frozenModel,
+      frozenScreen: event.frozenScreen,
+      error: undefined,
+    })),
   },
 };
 
@@ -39,6 +44,7 @@ const finishMachine = finish.createMachine({
   initial: 'idle',
   context: {
     frozenModel: null,
+    frozenScreen: undefined,
     isNextScreenLoading: false,
     error: undefined,
   },
@@ -53,6 +59,7 @@ const finishMachine = finish.createMachine({
           target: 'idle',
           actions: finish.assign<ErrorInvokeEvent>((_, event) => ({
             frozenModel: null,
+            frozenScreen: undefined,
             error: toLocalizableError(event.error),
           })),
         },
@@ -62,7 +69,7 @@ const finishMachine = finish.createMachine({
       always: {
         guard: context => !context.isNextScreenLoading,
         target: 'finished',
-        actions: finish.assign(() => ({ frozenModel: null })),
+        actions: finish.assign(() => ({ frozenModel: null, frozenScreen: undefined })),
       },
     },
     finished: {
@@ -126,17 +133,20 @@ export function useSignUpController(
   const shown = shownRoute(route, flow.step.type === 'signed_in' && !arrivedSignedIn ? { type: 'leaving' } : flow.step);
   const isFlowOver = finishSnapshot.value === 'finished' || shown === 'taskChooseOrganization';
   const isHidden = liveStep.type === 'signed_in' && (leavesOnArrival || isFlowOver);
-  const screen = actions.pendingKey === 'ticket' ? 'loading' : screenFor(shown, flow, blocked !== undefined);
+  const screen =
+    actions.pendingKey === 'ticket'
+      ? 'loading'
+      : (finishSnapshot.context.frozenScreen ?? screenFor(shown, flow, blocked !== undefined));
 
   useRouteGuard({ route, go }, shown);
 
-  const next = (result: SignUpCreateResult) => {
+  const next = (result: SignUpCreateResult, frozenScreen?: 'loading') => {
     if (result.type === 'blocked') {
       setBlocked(result.details);
       return;
     }
     if (result.type === 'complete') {
-      sendFinish({ type: 'FINISH', frozenModel: model });
+      sendFinish({ type: 'FINISH', frozenModel: model, frozenScreen });
       return;
     }
     const nextRoute = routeFor(result, route);
@@ -164,7 +174,7 @@ export function useSignUpController(
     void actions.run('ticket', async () => {
       const { result, emailAddress } = await flow.redeemTicket();
       details.adoptInvitation(emailAddress);
-      next(result);
+      next(result, 'loading');
     });
   });
   /* eslint-enable react-you-might-not-need-an-effect/no-event-handler */
