@@ -1,5 +1,13 @@
 # Change Log
 
+## 4.50.0
+
+### Minor Changes
+
+- `SignUpFuture.create()` accepts a `channel`. Pass it with `strategy: 'phone_code'` and a `phoneNumber` to create the sign-up and send the verification code over that channel, such as `'whatsapp'`, in a single request instead of calling `SignUpFuture.verifications.sendPhoneCode()` afterwards. ([#10955](https://github.com/clerk/javascript/pull/10955)) by [@austincalvelage](https://github.com/austincalvelage)
+
+- `SignUpFuture.update()` accepts a `password`, so a custom flow can set the password on a sign-up that was created without one, such as one started from an invitation. ([#10955](https://github.com/clerk/javascript/pull/10955)) by [@austincalvelage](https://github.com/austincalvelage)
+
 ## 4.49.0
 
 ### Minor Changes

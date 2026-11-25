@@ -1,5 +1,11 @@
 # @clerk/expo-native-components
 
+## 0.4.9
+
+### Patch Changes
+
+- Fix switching organizations in JS or in a native component not reaching the other side. Both now show the same active organization after a switch. ([#10988](https://github.com/clerk/javascript/pull/10988)) by [@wobsoriano](https://github.com/wobsoriano)
+
 ## 0.4.8
 
 ### Patch Changes

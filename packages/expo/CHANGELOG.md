@@ -1,5 +1,18 @@
 # Change Log
 
+## 4.17.7
+
+### Patch Changes
+
+- Fix the JS SDK staying signed out after a native sign-in when the network request that syncs it failed. The SDK now retries the sync, and if it still fails, syncs again the next time the app returns to the foreground. ([#10987](https://github.com/clerk/javascript/pull/10987)) by [@wobsoriano](https://github.com/wobsoriano)
+
+- Fix switching organizations in JS or in a native component not reaching the other side. Both now show the same active organization after a switch. ([#10988](https://github.com/clerk/javascript/pull/10988)) by [@wobsoriano](https://github.com/wobsoriano)
+
+- Updated dependencies [[`125302a`](https://github.com/clerk/javascript/commit/125302ac5534da32909a19680792cdee00fabc4e), [`125302a`](https://github.com/clerk/javascript/commit/125302ac5534da32909a19680792cdee00fabc4e)]:
+  - @clerk/shared@4.50.0
+  - @clerk/clerk-js@6.47.1
+  - @clerk/react@6.19.7
+
 ## 4.17.6
 
 ### Patch Changes
